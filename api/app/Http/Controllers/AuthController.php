@@ -36,7 +36,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password, // mutator cifra automáticamente
-            'role' => $role
+            'role' => $role,
+            'contracted_hours' => $request->contracted_hours
         ]);
 
         return response()->json([

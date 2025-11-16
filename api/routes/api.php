@@ -28,6 +28,7 @@ Route::group(['middleware' => ['jwt.auth']], function() {
         Route::put('users/{id}', [AdminUserController::class, 'update']);
         Route::delete('users/{id}', [AdminUserController::class, 'destroy']);
         Route::get('attendances', [AdminAttendanceController::class, 'index']);
+        Route::put('attendances/{id}', [AdminAttendanceController::class, 'updateObservation']);
         
     });
 });

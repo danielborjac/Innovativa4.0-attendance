@@ -6,6 +6,7 @@ import AttendancePage from "../pages/AttendancePage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { AuthContext } from "../contexts/AuthContext";
 import AdminLayout from "../layouts/AdminLayout";
+import AdminAttendancesPage from "../pages/AdminAttendancesPage";
 
 const AppRoutes = () => {
   const { loading } = useContext(AuthContext);
@@ -30,6 +31,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="users" element={<UsersPage />} />
+        <Route path="admin_attendance" element={<AdminAttendancesPage />} />
         <Route path="attendance" element={<AttendancePage />} />
       </Route>
     </Routes>

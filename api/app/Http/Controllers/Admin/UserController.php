@@ -34,7 +34,7 @@ class UserController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $user->update($request->only(['name', 'email', 'role']));
+        $user->update($request->only(['name', 'email', 'role', 'contracted_hours']));
 
         return response()->json([
             'message' => 'Usuario actualizado correctamente',

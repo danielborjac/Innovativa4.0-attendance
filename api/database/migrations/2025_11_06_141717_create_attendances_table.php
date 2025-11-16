@@ -15,6 +15,7 @@ class CreateAttendancesTable extends Migration
             $table->string('photo_path')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('photo_path')->nullable();
             $table->timestamp('recorded_at')->useCurrent();
             $table->timestamps();
         });

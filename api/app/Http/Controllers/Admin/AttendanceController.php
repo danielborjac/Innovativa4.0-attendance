@@ -19,7 +19,7 @@ class AttendanceController extends Controller
 
         // Filtrar por rango de fechas (YYYY-MM-DD)
         if ($request->has(['start_date', 'end_date'])) {
-            $query->whereBetween('created_at', [
+            $query->whereBetween('recorded_at', [
                 $request->start_date . ' 00:00:00',
                 $request->end_date . ' 23:59:59'
             ]);
@@ -27,16 +27,36 @@ class AttendanceController extends Controller
 
         // Filtrar por mes (YYYY-MM)
         if ($request->has('month')) {
-            $query->whereMonth('created_at', '=', date('m', strtotime($request->month)))
-                  ->whereYear('created_at', '=', date('Y', strtotime($request->month)));
+            $query->whereMonth('recorded_at', '=', date('m', strtotime($request->month)))
+                  ->whereYear('recorded_at', '=', date('Y', strtotime($request->month)));
         }
 
         // Ordenar y agrupar
         $attendances = $query
             ->orderBy('user_id', 'asc')
-            ->orderBy('created_at', 'asc')
+            ->orderBy('recorded_at', 'asc')
             ->paginate(50);
 
         return response()->json($attendances);
+    }
+    public function updateObservation(Request $request, $id)
+    {
+        $request->validate([
+            'observation' => 'nullable|string|max:500',
+        ]);
+
+        $attendance = Attendance::find($id);
+
+        if (!$attendance) {
+            return response()->json(['message' => 'Asistencia no encontrada'], 404);
+        }
+
+        $attendance->observation = $request->observation;
+        $attendance->save();
+
+        return response()->json([
+            'message' => 'Observación actualizada correctamente',
+            'attendance' => $attendance,
+        ]);
     }
 }

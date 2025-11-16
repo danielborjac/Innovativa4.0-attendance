@@ -14,6 +14,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', ['user','admin'])->default('user');
+            $table->integer('contracted_hours');
             $table->rememberToken();
             $table->timestamps();
         });

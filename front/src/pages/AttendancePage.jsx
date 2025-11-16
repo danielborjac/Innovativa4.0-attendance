@@ -18,7 +18,7 @@ const AttendancePage = () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (videoRef.current) videoRef.current.srcObject = stream;
-      } catch (err) {
+      } catch {
         alert("Debes permitir acceso a la cámara para registrar asistencias.");
       }
     })();
@@ -44,31 +44,40 @@ const AttendancePage = () => {
     const video = videoRef.current;
     if (!canvas || !video) return;
 
+    const maxSize = 400; // Tamaño máximo en px
+    const ratio = Math.min(maxSize / video.videoWidth, maxSize / video.videoHeight, 1);
+    const width = video.videoWidth * ratio;
+    const height = video.videoHeight * ratio;
+
+    canvas.width = width;
+    canvas.height = height;
     const context = canvas.getContext("2d");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
-    canvas.toBlob((blob) => setPhoto(blob), "image/jpeg");
+    context.drawImage(video, 0, 0, width, height);
+
+    canvas.toBlob(
+      (blob) => setPhoto(blob),
+      "image/jpeg",
+      0.7
+    );
   };
 
   const handleRegister = async (type) => {
-    if (!photo) {
-      alert("Primero toma una foto antes de registrar.");
-      return;
-    }
-    if (!position.lat || !position.lng) {
-      alert("No se pudo obtener tu ubicación.");
-      return;
-    }
+    if (!photo) return alert("Primero toma una foto antes de registrar.");
+    if (!position.lat || !position.lng) return alert("No se pudo obtener tu ubicación.");
 
     setLoading(true);
     setMessage("");
+
+    // Fecha ajustada a zona horaria de Ecuador
+    const now = new Date();
+    const ecuadorTime = new Date(now.getTime() - (now.getTimezoneOffset() + 300) * 60000);
 
     const formData = new FormData();
     formData.append("type", type);
     formData.append("photo", photo);
     formData.append("latitude", position.lat);
     formData.append("longitude", position.lng);
+    formData.append("timestamp", ecuadorTime.toISOString()); // ⏰ fecha ajustada
 
     try {
       const res = await axiosClient.post("/attendance", formData, {
@@ -78,7 +87,7 @@ const AttendancePage = () => {
       setPhoto(null);
     } catch (err) {
       console.error(err);
-      setMessage("❌ Error al registrar asistencia.");
+      setMessage("❌ Error al registrar asistencia: " + err.response.data.message);
     } finally {
       setLoading(false);
     }

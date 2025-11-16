@@ -1,18 +1,20 @@
-import React, { useContext} from "react";
+import React, { useContext, useEffect} from "react";
 import UsersTable from "../components/users/UsersTable";
 import { AuthContext } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function UsersPage() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+    // redirect non-admin to /attendance
+    useEffect(() => {
+      if (user && user.role !== "admin") navigate("/attendance");
+    }, [user]);
 
   return (
-    <div className="app-layout">
-      <div className="main">
-        <main className="content">
-          <h1>Usuarios</h1>
-          <UsersTable isAdmin={user?.role === "admin"} />
-        </main>
-      </div>
-    </div>
+    <main className="content">
+      <h1>Usuarios</h1>
+      <UsersTable isAdmin={user?.role === "admin"} />
+    </main>
   );
 }

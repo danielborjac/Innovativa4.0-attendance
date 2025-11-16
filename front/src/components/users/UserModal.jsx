@@ -10,6 +10,7 @@ export default function UserModal({ user, onClose, onSave }) {
     name: user?.name || "",
     email: user?.email || "",
     role: user?.role || "user",
+    contracted_hours: user?.contracted_hours || null,
     password: "",
     password_confirmation: "",
   });
@@ -20,6 +21,7 @@ export default function UserModal({ user, onClose, onSave }) {
       name: user?.name || "",
       email: user?.email || "",
       role: user?.role || "user",
+      contracted_hours: user?.contracted_hours || null,
       password: "",
       password_confirmation: "",
     });
@@ -53,6 +55,8 @@ export default function UserModal({ user, onClose, onSave }) {
           <option value="user">user</option>
           <option value="admin">admin</option>
         </select>
+        <label>Horas contrato</label>
+        <input type='number' name="contracted_hours" value={form.contracted_hours} onChange={handle} />
         {!isEdit && <>
           <label>Contraseña</label>
           <input type="password" name="password" value={form.password} onChange={handle} />

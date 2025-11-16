@@ -15,6 +15,7 @@ export default function UsersTable({ isAdmin }) {
     try {
       const res = await axiosClient.get("/admin/users");
       setUsers(res.data);
+      console.log(users);
     } catch (err) {
       console.error(err);
     } finally {
@@ -66,7 +67,7 @@ export default function UsersTable({ isAdmin }) {
       {loading ? <div>Cargando...</div> : (
         <table className="table">
           <thead>
-            <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
+            <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Horas contrato</th><th>Acciones</th></tr>
           </thead>
           <tbody>
             {users?.length ? users.map(u => (
@@ -74,6 +75,7 @@ export default function UsersTable({ isAdmin }) {
                 <td>{u.name}</td>
                 <td>{u.email}</td>
                 <td>{u.role}</td>
+                <td>{u.contracted_hours}</td>
                 <td className="actions">
                   <button className="icon-btn" onClick={() => openEdit(u)} title="Editar"><FaEdit/></button>
                   <button className="icon-btn danger" onClick={() => setConfirm({ open: true, userId: u.id })} title="Eliminar"><FaTrash/></button>
