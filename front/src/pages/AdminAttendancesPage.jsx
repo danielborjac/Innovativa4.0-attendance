@@ -6,6 +6,7 @@ import axiosClient from "../api/axiosClient";
 import { AuthContext } from "../contexts/AuthContext";
 import AttendanceAdminTable from "../components/attendance/AttendanceAdminTable";
 import ExportModal from "../components/attendance/ExportModal";
+import DeleteModal from "../components/attendance/DeleteModal";
 import { parseEcuadorToMs } from "../utils/dateUtils";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +17,7 @@ export default function AdminAttendancesPage() {
   // redirect non-admin to /attendance
   useEffect(() => {
     if (user && user.role !== "admin") navigate("/attendance");
-  }, [user]);
+  }, [user, navigate]);
 
   const [filters, setFilters] = useState({
     user_id: "", // empty = all
@@ -29,6 +30,7 @@ export default function AdminAttendancesPage() {
   const [attendancesRaw, setAttendancesRaw] = useState([]); // raw data from API
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     // fetch users for dropdown
@@ -75,12 +77,20 @@ export default function AdminAttendancesPage() {
     //fetchAttendances();
   }, []);
 
+  const handleDeleted = () => {
+    setDeleteOpen(false);
+    fetchAttendances({ page: 1 }); // Forzamos recarga y volvemos a la página 1
+  }
+
   return (
 
       <div className="card">
         <div className="card-header" style={{ alignItems: "center" }}>
           <h2>Reporte de Asistencias (admin)</h2>
           <div>
+            <button className="btn danger" onClick={() => setDeleteOpen(true)} style={{ marginRight: 8 }}>
+                🗑️ Eliminar Antiguos
+            </button>
             <button className="btn" onClick={() => setExportOpen(true)}>
               Exportar Excel
             </button>
@@ -92,7 +102,7 @@ export default function AdminAttendancesPage() {
             <option value="">Todos los usuarios</option>
             {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
-          <div class="admin-attendance">
+          <div className="admin-attendance">
             <label>Desde: <input type="date" value={filters.start_date} onChange={e=> setFilters(f => ({...f, start_date: e.target.value}))} /></label>
             
             <label>Hasta: <input type="date" value={filters.end_date} onChange={e=> setFilters(f => ({...f, end_date: e.target.value}))} /></label>
@@ -112,6 +122,12 @@ export default function AdminAttendancesPage() {
         <ExportModal
           users={users}
           onClose={() => setExportOpen(false)}
+        />
+      )}
+      {deleteOpen && (
+        <DeleteModal 
+            onClose={() => setDeleteOpen(false)}
+            onDeleted={handleDeleted}
         />
       )}
 

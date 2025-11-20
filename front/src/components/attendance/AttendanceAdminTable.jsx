@@ -1,6 +1,6 @@
 // src/components/attendance/AttendanceAdminTable.jsx
 import React, { useMemo, useState } from "react";
-import { parseEcuadorToMs, formatTimeFromMs, formatDateFromMs, getWeekdayNameFromMs } from "../../utils/dateUtils";
+import { parseEcuadorToMs, formatTimeFromMs, getWeekdayNameFromMs } from "../../utils/dateUtils";
 import ObservationModal from "./ObservationModal";
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -9,17 +9,25 @@ function groupByDay(raw) {
   // raw: array of attendance items. For each day (by recorded_at date) and user, produce combined object
   const map = new Map();
   raw.forEach(item => {
-    const ms = parseEcuadorToMs(item.recorded_at);
-    const dateKey = formatDateFromMs(ms); // yyyy-mm-dd
+    // FIX: Get the dateKey directly from the recorded_at string (e.g., "2025-11-10")
+    // This avoids timezone issues where an evening record could be shifted to the next day in UTC.
+    const dateKey = item.recorded_at.substring(0, 10); // yyyy-mm-dd
+    const ms = parseEcuadorToMs(item.recorded_at); // Keep milliseconds conversion for time display/sorting
+    
     const uid = item.user_id;
     const key = `${uid}__${dateKey}`;
+    
     if (!map.has(key)) {
       map.set(key, { user: item.user, dateKey, entries: [], exits: [] });
     }
     const entry = map.get(key);
+    
+    // Assumes 'entry' and 'entrada' are used for entry, everything else is exit
     if (item.type === "entry" || item.type === "entrada") entry.entries.push({ ...item, ms });
     else entry.exits.push({ ...item, ms });
   });
+  
+  // Sort by date ascending
   return Array.from(map.values()).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
 }
 
@@ -39,9 +47,13 @@ export default function AttendanceAdminTable({ raw = [], loading, onReload }) {
     const entryMs = entryItem?.ms ?? null;
     const exitMs = exitItem?.ms ?? null;
     const hoursWorked = (entryMs != null && exitMs != null) ? ((exitMs - entryMs) / (1000*60*60)) : null;
+    
+    // Determine the date to get the weekday name from (using the entry, or the exit if entry is missing)
+    const msForDayName = entryMs ?? exitMs;
+
     return {
       user: g.user,
-      dayName: getWeekdayNameFromMs(entryMs ?? exitMs),
+      dayName: msForDayName ? getWeekdayNameFromMs(msForDayName) : 'Día Desconocido',
       date: g.dateKey,
       entryTime: entryMs ? formatTimeFromMs(entryMs) : "",
       entryCoords: entryItem ? `${entryItem.latitude}, ${entryItem.longitude}` : "",
@@ -113,7 +125,7 @@ export default function AttendanceAdminTable({ raw = [], loading, onReload }) {
                   ) : "—"}
                 </td>
                 <td>
-                  <button className="btn" onClick={() => openObservation(r)}>Editar obs</button>
+                  <button className="btn" onClick={() => openObservation(r)}>Editar</button>
                 </td>
               </tr>
             ))}
